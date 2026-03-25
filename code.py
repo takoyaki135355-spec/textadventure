@@ -1,6 +1,6 @@
 import time as t
 import random as r
-arguements = ['i', 's', 'x']
+arguments = ['i', 's', 'x']
 def decision(x):
     for i in range(x):
         # Convert to lower case immediately to save typing it later
@@ -100,7 +100,23 @@ class Inventory:
         self.item3 = item3
     def display(self):
         mychar.showstats()
-        print(f"Inventory,\n{self.sword1}    {self.sword2} <-Swords\n{self.bow}    {self.arrows} <-Bow <-Arrows\n{self.item1}    {self.item2} <-Item slots\n{self.item3}    {self.shield} <-Item slot <-Shield")
+        def name(x):
+            return getattr(x, 'name', x)
+
+        s1 = name(self.sword1)
+        s2 = name(self.sword2)
+        b = name(self.bow)
+        arrows = name(self.arrows)
+        i1 = name(self.item1)
+        i2 = name(self.item2)
+        i3 = name(self.item3)
+        shield = name(self.shield)
+#😭 
+        print("Inventory,")
+        print(f"{s1}    {s2} <-Swords")
+        print(f"{b}    {arrows} <-Bow <-Arrows")
+        print(f"{i1}    {i2} <-Item slots")
+        print(f"{i3}    {shield} <-Item slot <-Shield")
 
 inv=Inventory('empty','empty','empty','empty','empty','empty','empty','empty')
 
@@ -109,136 +125,69 @@ upgradepts=0
 
 
 class Shop:
-    def __init__(self, item1, price1, item2, price2, item3, price3, item4, price4, item5, price5):
-        self.item1 = item1
-        self.price1 = price1
-        self.item2 = item2
-        self.price2 = price2
-        self.item3 = item3
-        self.price3 = price3
-        self.item4 = item4
-        self.price4 = price4
-        self.item5 = item5
-        self.price5 = price5
-
+    def __init__(self, items):
+        """items: dict mapping item_name -> price (names should be lowercase)."""
+        self.items = {k.lower(): v for k, v in items.items()}
 
     def display(self):
         print('')
         print('')
         print("-{)()()()()()()()()()()()()()()()()()(}-")
         print(' ')
-        print(f" {self.item1}---------- {self.price1}           Welcome to my shop!")
+        print('           Welcome to my shop!')
         print(' ')
-        print(f" {self.item2} ----------{self.price2}            What would you like to buy?")
+        for name, price in self.items.items():
+            print(f" {name} ----------- {price}")
         print(' ')
-        print(f" {self.item3} ----------{self.price3}")
-        print(' ')
-        print(f" {self.item4}----------- {self.price4}           Jangy's shop at {mychar.playerloc}")
-        print(' ')
-        print(f" {self.item5} -----------{self.price5}")
+        print(f"           Jangy's shop at {mychar.playerloc}")
         print('-{)()()()()()()()()()()()()()()()()()(}- \n\n')
+
     def buy(self):
-        item = input("Enter the name of the item you would like to buy: ")
-        if item.lower() == self.item1:
-            if inv.item1 == 'empty':
-                inv.item1 = self.item1
-                mychar.money -= self.price1
+        item = input("Enter the name of the item you would like to buy: ").lower().strip()
+        if item not in self.items:
+            print("That is an invalid item")
+            return
+
+        price = self.items[item]
+        if mychar.money < price:
+            print("You're too broke for that.")
+            return
+
+        slots = ["item1", "item2", "item3"]
+        for slot in slots:
+            if getattr(inv, slot) == 'empty':
+                setattr(inv, slot, item)
+                mychar.money -= price
                 print("item purchased successfully")
-            elif inv.item2 == 'empty':
-                inv.item2 = self.item1
-                mychar.money -= self.price1
-                print("item purchased successfully")
-            elif inv.item3 == 'empty':
-                inv.item3 = self.item1
-                mychar.money -= self.price1
-                print("item purchased successfully")
-            else:
-                print('Inventory is full,')
-                t.sleep(.5)
-                inv.display()
-                t.sleep(.5)
-                invreplace=input('Do you want to replace the item? (yes/no): ')
-                if invreplace.lower() == 'yes':
-                    invreplace = int(input('Enter the slot to replace with the item (1/2/3): '))
-                    if invreplace == 1:
-                        inv.item1 = self.item1
-                        mychar.money = mychar.money - self.price1
-                        print("item purchased successfully")
-                    elif invreplace == 2:
-                        inv.item2 = self.item1
-                        mychar.money = mychar.money - self.price1
-                        print("item purchased successfully")
-                    elif invreplace == 3:
-                        inv.item3 = self.item1
-                        mychar.money = mychar.money - self.price1
-                        print("item purchased successfully")
-                    else:
-                        class Shop:
-                            def __init__(self, items):
-                                """items: dict mapping item_name -> price (names should be lowercase)."""
-                                # copy to avoid external mutation
-                                self.items = {k.lower(): v for k, v in items.items()}
+                return
 
-                            def display(self):
-                                print('')
-                                print('')
-                                print("-{)()()()()()()()()()()()()()()()()()(}-")
-                                print(' ')
-                                # header
-                                print('           Welcome to my shop!')
-                                print(' ')
-                                for name, price in self.items.items():
-                                    print(f" {name} ----------- {price}")
-                                print(' ')
-                                print(f"           Jangy's shop at {mychar.playerloc}")
-                                print('-{)()()()()()()()()()()()()()()()()()(}- \n\n')
+        # inventory full
+        print('Inventory is full,')
+        t.sleep(.5)
+        inv.display()
+        t.sleep(.5)
+        invreplace = input('Do you want to replace the item? (yes/no): ').lower().strip()
+        if invreplace != 'yes':
+            print('okay')
+            return
 
-                            def buy(self):
-                                item = input("Enter the name of the item you would like to buy: ").lower().strip()
-                                if item not in self.items:
-                                    print("That is an invalid item")
-                                    return
+        try:
+            slot_num = int(input('Enter the slot to replace with the item (1/2/3): '))
+        except ValueError:
+            print('That is not a valid choice')
+            return
 
-                                price = self.items[item]
-                                if mychar.money < price:
-                                    print("You're too broke for that.")
-                                    return
+        if slot_num in (1, 2, 3):
+            setattr(inv, f'item{slot_num}', item)
+            mychar.money -= price
+            print('item purchased successfully')
+        else:
+            print('That is not a valid choice')
 
-                                # try to place in first empty slot
-                                slots = ["item1", "item2", "item3"]
-                                for slot in slots:
-                                    if getattr(inv, slot) == 'empty':
-                                        setattr(inv, slot, item)
-                                        mychar.money -= price
-                                        print("item purchased successfully")
-                                        return
-
-                                # inventory full
-                                print('Inventory is full,')
-                                t.sleep(.5)
-                                inv.display()
-                                t.sleep(.5)
-                                invreplace = input('Do you want to replace the item? (yes/no): ').lower().strip()
-                                if invreplace != 'yes':
-                                    print('okay')
-                                    return
-
-                                try:
-                                    slot_num = int(input('Enter the slot to replace with the item (1/2/3): '))
-                                except ValueError:
-                                    print('That is not a valid choice')
-                                    return
-
-                                if slot_num in (1, 2, 3):
-                                    setattr(inv, f'item{slot_num}', item)
-                                    mychar.money -= price
-                                    print('item purchased successfully')
-                                else:
-                                    print('That is not a valid choice')
 merch = Shop({
     'bread': 3,
     'potion': 10,
-    'elixir': 25
+    'elixir': 25,
 })
 def opening_dialogue():
     global fist
@@ -293,6 +242,9 @@ def opening_dialogue():
 # Run the opening dialogue here
 if mychar.name == "dev":
     pass
+elif mychar.name.lower() == "ninjahere" or mychar.name.lower() == "pavel" or mychar.name.lower() == "sudokys" or mychar.name.lower() == "ritvik":
+    print("A MEMBER OF THEM?! I SEE")
+    inv.sword1 = sword("mega sword", 1, 99999999)
 else:
     opening_dialogue()
 
