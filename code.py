@@ -247,6 +247,14 @@ elif mychar.name.lower() == "ninjahere" or mychar.name.lower() == "pavel" or myc
     print("A MEMBER OF THEM?! I SEE")
     print("JOIN THEM?!")
     command = input("Do you want the boring intro dialogue?\n1. Yes\n2. No\nEnter your choice (default: 1): ")
+    if command == '1':
+        opening_dialogue()
+    elif command == '2':
+        print("Okay, skipping intro dialogue")
+    else:
+        print("Invalid choice, reading intro dialogue")
+        t.sleep(2)
+        opening_dialogue()
 else:
     opening_dialogue()
 
