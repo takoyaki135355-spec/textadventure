@@ -1,4 +1,4 @@
-#test
+# hello
 import time as t
 import random as r
 arguments = ['i', 's', 'x']
@@ -245,7 +245,8 @@ if mychar.name == "dev":
     pass
 elif mychar.name.lower() == "ninjahere" or mychar.name.lower() == "pavel" or mychar.name.lower() == "sudokys" or mychar.name.lower() == "ritvik":
     print("A MEMBER OF THEM?! I SEE")
-    inv.sword1 = sword("mega sword", 1, 99999999)
+    print("JOIN THEM?!")
+    command = input("Do you want the boring intro dialogue?\n1. Yes\n2. No\nEnter your choice (default: 1): ")
 else:
     opening_dialogue()
 
